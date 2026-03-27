@@ -1,84 +1,89 @@
 import java.util.*;
 
-/* Service class representing an add-on service */
-class Service {
+/* Reservation class */
 
-    private String serviceName;
-    private double price;
+class Reservation {
 
-    public Service(String serviceName, double price) {
-        this.serviceName = serviceName;
-        this.price = price;
+    private String reservationId;
+    private String guestName;
+    private String roomType;
+
+    public Reservation(String reservationId, String guestName, String roomType) {
+        this.reservationId = reservationId;
+        this.guestName = guestName;
+        this.roomType = roomType;
     }
 
-    public String getServiceName() {
-        return serviceName;
+    public String getReservationId() {
+        return reservationId;
     }
 
-    public double getPrice() {
-        return price;
+    public String getGuestName() {
+        return guestName;
     }
 
-    public void displayService() {
-        System.out.println(serviceName + " (₹" + price + ")");
+    public String getRoomType() {
+        return roomType;
+    }
+
+    public void displayReservation() {
+        System.out.println("Reservation ID: " + reservationId +
+                " | Guest: " + guestName +
+                " | Room Type: " + roomType);
     }
 }
 
 
-/* Add-On Service Manager */
+/* Booking History */
 
-class AddOnServiceManager {
+class BookingHistory {
 
-    // Map: Reservation ID → List of services
-    private Map<String, List<Service>> reservationServices;
+    private List<Reservation> history;
 
-    public AddOnServiceManager() {
-        reservationServices = new HashMap<>();
+    public BookingHistory() {
+        history = new ArrayList<>();
     }
 
-    // Add service to reservation
-    public void addService(String reservationId, Service service) {
-
-        reservationServices.putIfAbsent(reservationId, new ArrayList<>());
-
-        reservationServices.get(reservationId).add(service);
-
-        System.out.println("Service added: " + service.getServiceName() +
-                " for Reservation " + reservationId);
+    // Store confirmed reservation
+    public void addReservation(Reservation reservation) {
+        history.add(reservation);
+        System.out.println("Reservation stored in history: " + reservation.getReservationId());
     }
 
-    // Display services for reservation
-    public void displayServices(String reservationId) {
-
-        List<Service> services = reservationServices.get(reservationId);
-
-        if (services == null || services.isEmpty()) {
-            System.out.println("No add-on services selected.");
-            return;
-        }
-
-        System.out.println("\nServices for Reservation " + reservationId);
-
-        for (Service s : services) {
-            s.displayService();
-        }
+    // Retrieve all reservations
+    public List<Reservation> getReservations() {
+        return history;
     }
+}
 
-    // Calculate total cost of services
-    public double calculateTotalServiceCost(String reservationId) {
 
-        double total = 0;
+/* Booking Report Service */
 
-        List<Service> services = reservationServices.get(reservationId);
+class BookingReportService {
 
-        if (services != null) {
+    public void generateReport(List<Reservation> reservations) {
 
-            for (Service s : services) {
-                total += s.getPrice();
-            }
+        System.out.println("\n===== Booking History Report =====");
+
+        for (Reservation r : reservations) {
+            r.displayReservation();
         }
 
-        return total;
+        System.out.println("\nTotal Bookings: " + reservations.size());
+
+        // Room type summary
+        Map<String, Integer> roomSummary = new HashMap<>();
+
+        for (Reservation r : reservations) {
+            roomSummary.put(r.getRoomType(),
+                    roomSummary.getOrDefault(r.getRoomType(), 0) + 1);
+        }
+
+        System.out.println("\nRoom Type Summary:");
+
+        for (Map.Entry<String, Integer> entry : roomSummary.entrySet()) {
+            System.out.println(entry.getKey() + " → " + entry.getValue());
+        }
     }
 }
 
@@ -94,33 +99,21 @@ public class BookMyStayApp {
         System.out.println("   Hotel Booking System v1.0     ");
         System.out.println("=================================");
 
-        // Example reservation IDs (created during booking)
-        String reservation1 = "RES-101";
-        String reservation2 = "RES-102";
+        // Initialize booking history
+        BookingHistory history = new BookingHistory();
 
-        // Create services
-        Service breakfast = new Service("Breakfast", 500);
-        Service spa = new Service("Spa Access", 1500);
-        Service pickup = new Service("Airport Pickup", 800);
+        // Simulate confirmed reservations
+        Reservation r1 = new Reservation("RES-101", "Alice", "Single Room");
+        Reservation r2 = new Reservation("RES-102", "Bob", "Double Room");
+        Reservation r3 = new Reservation("RES-103", "Charlie", "Suite Room");
 
-        // Service manager
-        AddOnServiceManager manager = new AddOnServiceManager();
+        // Store reservations
+        history.addReservation(r1);
+        history.addReservation(r2);
+        history.addReservation(r3);
 
-        // Guest selects services
-        manager.addService(reservation1, breakfast);
-        manager.addService(reservation1, spa);
-
-        manager.addService(reservation2, pickup);
-
-        // Display services
-        manager.displayServices(reservation1);
-        manager.displayServices(reservation2);
-
-        // Calculate extra cost
-        System.out.println("\nTotal Add-On Cost for " + reservation1 +
-                " : ₹" + manager.calculateTotalServiceCost(reservation1));
-
-        System.out.println("Total Add-On Cost for " + reservation2 +
-                " : ₹" + manager.calculateTotalServiceCost(reservation2));
+        // Generate report
+        BookingReportService reportService = new BookingReportService();
+        reportService.generateReport(history.getReservations());
     }
 }
